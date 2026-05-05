@@ -68,6 +68,34 @@ def process_sample_images(image_dir: str, model_name: str = "yolov8n.pt") -> Non
     print("処理完了")
 
 
+def save_detection_result(image_path: str, model: YOLO, output_dir: str) -> str:
+    """
+    YOLOv8の検出結果をBBOX・ラベル・信頼度付きで画像として保存する。
+
+    Args:
+        image_path: 入力画像ファイルのパス
+        model: ロード済みYOLOモデル
+        output_dir: 保存先ディレクトリのパス
+
+    Returns:
+        保存したファイルのパス（例: /path/to/results/empty_result.png）
+    """
+    results = model(image_path, conf=0.25, verbose=False, device="cpu")
+
+    output_dir_path = Path(output_dir)
+    output_dir_path.mkdir(parents=True, exist_ok=True)
+
+    stem = Path(image_path).stem
+    output_path = output_dir_path / f"{stem}_result.png"
+
+    annotated = results[0].plot()
+
+    import cv2
+    cv2.imwrite(str(output_path), annotated)
+
+    return str(output_path)
+
+
 if __name__ == "__main__":
     base_dir = Path(__file__).parent.parent
     image_dir = base_dir / "data" / "sample_images"
